@@ -1,6 +1,7 @@
 import java.time.Duration
 import java.time.Instant
 import java.util.*
+import kotlin.collections.ArrayList
 
 class VertexCover(private val graph: Graph,private var k: Int) {
   private var min = 0
@@ -407,6 +408,60 @@ class VertexCover(private val graph: Graph,private var k: Int) {
     println("------------------------------------------------------------------------")
     return cover!!.clone() as ArrayList<Vertex>
   }
+
+
+  // Abordagem de aproximação Gulosa Randomizada
+  // obter todas as Arestas no Grafo
+  // obter todos os Vértices no Grafo
+  // fazer um loop até que uma cobertura de vertices seja encontrada
+  // obter o vértice com o maior número de arestas associadas
+  // adicionar o vertice encontrado à lista de cobertura de vértices
+  // remover o vértice encontrado da lista de vértices disponíveis
+  // remover todas as arestas que contêm o vértice encontrado acima.
+
+  fun randomGreedyCover(): ArrayList<Vertex>? {
+    val startTime = Instant.now()
+    val edges = graph.getEdges()
+    val vertices = graph.getVertices()
+    cover = ArrayList()
+    while (edges.isNotEmpty()) {
+      val vertex = getRandomMaxDegree(vertices, edges)
+      cover!!.add(vertex)
+      vertices.remove(vertex)
+      removeEdges(vertex, edges)
+    }
+    val endTime = Instant.now()
+    println("----------Busca-Gulosa-Randomizada--------------------------------------------------")
+    println("Solução para busca gulosa randomizada:")
+    println("Vértices da cobertura: " + cover.toString())
+    println("Tempo de Execução: " + Duration.between(startTime, endTime).toMillis()+ "ms")
+    println("------------------------------------------------------------------------")
+    return cover!!.clone() as ArrayList<Vertex>
+  }
+
+  private fun getRandomMaxDegree(vertices: ArrayList<Vertex>, edges: ArrayList<Edge>): Vertex {
+    val maxDegree = getMaxDegree(vertices, edges)
+    val maxDegreeVertices = ArrayList<Vertex>()
+    for (vertex in vertices) {
+      if (getDegree(vertex) == getDegree(maxDegree)) {
+        maxDegreeVertices.add(vertex)
+      }
+    }
+    val random = Random()
+    val index = random.nextInt(maxDegreeVertices.size)
+    return maxDegreeVertices[index]
+  }
+
+  private fun getDegree(vertex: Vertex): Int {
+    var degree = 0
+    for (edge in graph.getEdges()) {
+      if (edge.getVertex1() == vertex || edge.getVertex2() == vertex) {
+        degree++
+      }
+    }
+    return degree
+  }
+
 
 
 

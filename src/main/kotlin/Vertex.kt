@@ -18,4 +18,6 @@ class Vertex {
   fun getValue(): Int {
     return value
   }
+
+
 }
