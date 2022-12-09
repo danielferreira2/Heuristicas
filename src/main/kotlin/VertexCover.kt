@@ -409,61 +409,64 @@ class VertexCover(private val graph: Graph,private var k: Int) {
     return cover!!.clone() as ArrayList<Vertex>
   }
 
-
-
-  fun tabuSearch(iterations:Int) {
-    val initialSolution = greedyCover()
+ fun geneticAlgorithm(){
     val startTime = Instant.now()
-    val tabuList = ArrayList<Vertex>()
-    var bestSolution = initialSolution
-    var bestSolutionSize = bestSolution!!.size
-    var currentSolution = initialSolution
-    var currentSolutionSize = currentSolution!!.size
-    var iteration = 0
-    while (iteration < iterations) {
-      val bestNeighbour = getBestNeighbour(currentSolution!!, tabuList)
-      if (bestNeighbour.size < currentSolutionSize) {
-        currentSolution = bestNeighbour
-        currentSolutionSize = currentSolution.size
-        if (currentSolutionSize < bestSolutionSize) {
-          bestSolution = currentSolution
-          bestSolutionSize = bestSolution.size
-        }
-        tabuList.add(bestNeighbour[0])
-        if (tabuList.size > 10) {
-          tabuList.removeAt(0)
+    val edges = graph.getEdges()
+    val vertices = graph.getVertices()
+    val population = ArrayList<ArrayList<Vertex>>()
+    var best = ArrayList<Vertex>()
+    var bestSize = 0
+    for (i in 0 until 1000){
+      val cover = ArrayList<Vertex>()
+      while (edges.isNotEmpty()) {
+        val vertex = getMaxDegree(vertices, edges)
+        cover.add(vertex)
+        vertices.remove(vertex)
+        removeEdges(vertex, edges)
+      }
+      population.add(cover)
+      if (cover.size > bestSize){
+        best = cover
+        bestSize = cover.size
+      }
+      edges.clear()
+      edges.addAll(graph.getEdges())
+      vertices.clear()
+      vertices.addAll(graph.getVertices())
+    }
+    var i = 0
+    while (i < 1000){
+      val cover1 = population[i]
+      val cover2 = population[i+1]
+      val cover3 = ArrayList<Vertex>()
+      val cover4 = ArrayList<Vertex>()
+      for (j in 0 until cover1.size){
+        if (j % 2 == 0){
+          cover3.add(cover1[j])
+          cover4.add(cover2[j])
+        }else{
+          cover3.add(cover2[j])
+          cover4.add(cover1[j])
         }
       }
-      iteration++
+      population.add(cover3)
+      population.add(cover4)
+      i += 2
+    }
+    for (i in 0 until population.size){
+      val cover = population[i]
+      if (cover.size > bestSize){
+        best = cover
+        bestSize = cover.size
+      }
     }
     val endTime = Instant.now()
-    println("----------Busca-Tabu--------------------------------------------------")
-    println("Solução para busca tabu:")
-    println("Vértices da cobertura: " + bestSolution.toString())
+    println("----------Algoritmo-Genético--------------------------------------------------")
+    println("Solução para algoritmo genético:")
+    println("Vértices da cobertura: " + best.toString())
     println("Tempo de Execução: " + Duration.between(startTime, endTime).toMillis()+ "ms")
     println("------------------------------------------------------------------------")
   }
-
-
-  fun getBestNeighbour(currentSolution: ArrayList<Vertex>, tabuList: ArrayList<Vertex>): ArrayList<Vertex> {
-    val bestNeighbour = ArrayList<Vertex>()
-    var bestNeighbourSize = currentSolution.size
-    for (vertex in currentSolution) {
-      val neighbour = currentSolution.clone() as ArrayList<Vertex>
-      neighbour.remove(vertex)
-      if (neighbour.size < bestNeighbourSize && !tabuList.contains(vertex)) {
-        bestNeighbourSize = neighbour.size
-        bestNeighbour.clear()
-        bestNeighbour.add(vertex)
-        bestNeighbour.addAll(neighbour)
-      }
-    }
-    return bestNeighbour
-  }
-
-
-
-
 
 
 
