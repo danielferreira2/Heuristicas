@@ -410,59 +410,65 @@ class VertexCover(private val graph: Graph,private var k: Int) {
   }
 
 
-  // Abordagem de aproximação Gulosa Randomizada
-  // obter todas as Arestas no Grafo
-  // obter todos os Vértices no Grafo
-  // fazer um loop até que uma cobertura de vertices seja encontrada
-  // obter o vértice com o maior número de arestas associadas
-  // adicionar o vertice encontrado à lista de cobertura de vértices
-  // remover o vértice encontrado da lista de vértices disponíveis
-  // remover todas as arestas que contêm o vértice encontrado acima.
 
-  fun randomGreedyCover(): ArrayList<Vertex>? {
+  fun tabuSearch(iterations:Int) {
+    val initialSolution = greedyCover()
     val startTime = Instant.now()
-    val edges = graph.getEdges()
-    val vertices = graph.getVertices()
-    cover = ArrayList()
-    while (edges.isNotEmpty()) {
-      val vertex = getRandomMaxDegree(vertices, edges)
-      cover!!.add(vertex)
-      vertices.remove(vertex)
-      removeEdges(vertex, edges)
+    val tabuList = ArrayList<Vertex>()
+    var bestSolution = initialSolution
+    var bestSolutionSize = bestSolution!!.size
+    var currentSolution = initialSolution
+    var currentSolutionSize = currentSolution!!.size
+    var iteration = 0
+    while (iteration < iterations) {
+      val bestNeighbour = getBestNeighbour(currentSolution!!, tabuList)
+      if (bestNeighbour.size < currentSolutionSize) {
+        currentSolution = bestNeighbour
+        currentSolutionSize = currentSolution.size
+        if (currentSolutionSize < bestSolutionSize) {
+          bestSolution = currentSolution
+          bestSolutionSize = bestSolution.size
+        }
+        tabuList.add(bestNeighbour[0])
+        if (tabuList.size > 10) {
+          tabuList.removeAt(0)
+        }
+      }
+      iteration++
     }
     val endTime = Instant.now()
-    println("----------Busca-Gulosa-Randomizada--------------------------------------------------")
-    println("Solução para busca gulosa randomizada:")
-    println("Vértices da cobertura: " + cover.toString())
+    println("----------Busca-Tabu--------------------------------------------------")
+    println("Solução para busca tabu:")
+    println("Vértices da cobertura: " + bestSolution.toString())
     println("Tempo de Execução: " + Duration.between(startTime, endTime).toMillis()+ "ms")
     println("------------------------------------------------------------------------")
-    return cover!!.clone() as ArrayList<Vertex>
   }
 
-  private fun getRandomMaxDegree(vertices: ArrayList<Vertex>, edges: ArrayList<Edge>): Vertex {
-    val maxDegree = getMaxDegree(vertices, edges)
-    val maxDegreeVertices = ArrayList<Vertex>()
-    for (vertex in vertices) {
-      if (getDegree(vertex) == getDegree(maxDegree)) {
-        maxDegreeVertices.add(vertex)
+
+  fun getBestNeighbour(currentSolution: ArrayList<Vertex>, tabuList: ArrayList<Vertex>): ArrayList<Vertex> {
+    val bestNeighbour = ArrayList<Vertex>()
+    var bestNeighbourSize = currentSolution.size
+    for (vertex in currentSolution) {
+      val neighbour = currentSolution.clone() as ArrayList<Vertex>
+      neighbour.remove(vertex)
+      if (neighbour.size < bestNeighbourSize && !tabuList.contains(vertex)) {
+        bestNeighbourSize = neighbour.size
+        bestNeighbour.clear()
+        bestNeighbour.add(vertex)
+        bestNeighbour.addAll(neighbour)
       }
     }
-    val random = Random()
-    val index = random.nextInt(maxDegreeVertices.size)
-    return maxDegreeVertices[index]
+    return bestNeighbour
   }
 
-  private fun getDegree(vertex: Vertex): Int {
-    var degree = 0
-    for (edge in graph.getEdges()) {
-      if (edge.getVertex1() == vertex || edge.getVertex2() == vertex) {
-        degree++
-      }
-    }
-    return degree
-  }
+
+
+
+
 
 
 
 
 }
+
+
