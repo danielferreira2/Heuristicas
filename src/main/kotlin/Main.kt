@@ -30,7 +30,7 @@ fun main() {
   vertexCover.firstSolution()
   vertexCover.greedyCover()
   vertexCover.randomApproxCover()
-  vertexCover.geneticAlgorithm()
+  vertexCover.grasp(100, 0.1)
 
 
 

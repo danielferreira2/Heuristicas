@@ -408,66 +408,52 @@ class VertexCover(private val graph: Graph,private var k: Int) {
     println("------------------------------------------------------------------------")
     return cover!!.clone() as ArrayList<Vertex>
   }
-
- fun geneticAlgorithm(){
+  fun grasp(numIter:Int, alpha:Double): ArrayList<Vertex>? {
     val startTime = Instant.now()
     val edges = graph.getEdges()
     val vertices = graph.getVertices()
-    val population = ArrayList<ArrayList<Vertex>>()
-    var best = ArrayList<Vertex>()
-    var bestSize = 0
-    for (i in 0 until 1000){
-      val cover = ArrayList<Vertex>()
+    cover = ArrayList()
+    var bestCover = greedyCover()
+    var bestCost = 0
+    for (i in 0 until numIter) {
+      cover = ArrayList()
       while (edges.isNotEmpty()) {
-        val vertex = getMaxDegree(vertices, edges)
-        cover.add(vertex)
+        val vertex = greedyRandomized(bestCover!!, edges, alpha)
+        cover!!.add(vertex)
         vertices.remove(vertex)
         removeEdges(vertex, edges)
       }
-      population.add(cover)
-      if (cover.size > bestSize){
-        best = cover
-        bestSize = cover.size
+      val cost = cover!!.size
+      if (cost > bestCost) {
+        bestCost = cost
+        bestCover = cover!!.clone() as ArrayList<Vertex>
       }
-      edges.clear()
       edges.addAll(graph.getEdges())
-      vertices.clear()
       vertices.addAll(graph.getVertices())
     }
-    var i = 0
-    while (i < 1000){
-      val cover1 = population[i]
-      val cover2 = population[i+1]
-      val cover3 = ArrayList<Vertex>()
-      val cover4 = ArrayList<Vertex>()
-      for (j in 0 until cover1.size){
-        if (j % 2 == 0){
-          cover3.add(cover1[j])
-          cover4.add(cover2[j])
-        }else{
-          cover3.add(cover2[j])
-          cover4.add(cover1[j])
-        }
-      }
-      population.add(cover3)
-      population.add(cover4)
-      i += 2
-    }
-    for (i in 0 until population.size){
-      val cover = population[i]
-      if (cover.size > bestSize){
-        best = cover
-        bestSize = cover.size
-      }
-    }
     val endTime = Instant.now()
-    println("----------Algoritmo-Genético--------------------------------------------------")
-    println("Solução para algoritmo genético:")
-    println("Vértices da cobertura: " + best.toString())
-    println("Tempo de Execução: " + Duration.between(startTime, endTime).toMillis()+ "ms")
+    println("----------GRASP--------------------------------------------------")
+    println("Solução para GRASP:")
+    println("Vértices da cobertura: " + bestCover!!.distinct().toString())
+    println("Tempo de Execução: " + Duration.between(startTime, endTime).toMillis() + "ms")
     println("------------------------------------------------------------------------")
+    return bestCover
   }
 
+  fun greedyRandomized(vertices: ArrayList<Vertex>, edges: ArrayList<Edge>, alpha: Double): Vertex {
+    val random = Random()
+    val r = random.nextDouble()
+    return if (r < alpha) {
+      getMaxDegree(vertices, edges)
+    } else {
+      getRandomVertex(vertices)
+    }
+  }
+  fun getRandomVertex(vertices: ArrayList<Vertex>): Vertex {
+    val random = Random()
+    val r = random.nextInt(vertices.size)
+    return vertices[r]
+  }
 
 
 
